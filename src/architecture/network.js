@@ -29,6 +29,7 @@ function Network (input, output) {
   this.connections = [];
   this.gates = [];
   this.selfconns = [];
+  this.stop = false; // early terminate flag for training
 
   // Regularization
   this.dropout = 0;
@@ -506,6 +507,13 @@ Network.prototype = {
   },
 
   /**
+   * Trigger an early termination of training
+   */
+  terminate: function() {
+    this.stop = true;
+  },
+
+  /**
    * Train the given set to this network
    */
   train: function (set, options) {
@@ -559,7 +567,7 @@ Network.prototype = {
     var error = 1;
 
     var i, j, x;
-    while (error > targetError && (options.iterations === 0 || iteration < options.iterations)) {
+    while (!this.stop && error > targetError && (options.iterations === 0 || iteration < options.iterations)) {
       if (options.crossValidate && error <= options.crossValidate.testError) break;
 
       iteration++;
@@ -591,6 +599,9 @@ Network.prototype = {
         options.schedule.function({ error: error, iteration: iteration });
       }
     }
+
+    // ensure stop flag is reset (if early-stopped)
+    this.stop = false;
 
     if (options.clear) this.clear();
 
@@ -932,7 +943,7 @@ Network.prototype = {
     var bestFitness = -Infinity;
     var bestGenome;
 
-    while (error < -targetError && (options.iterations === 0 || neat.generation < options.iterations)) {
+    while (!this.stop && error < -targetError && (options.iterations === 0 || neat.generation < options.iterations)) {
       let fittest = await neat.evolve();
       let fitness = fittest.score;
       error = fitness + (fittest.nodes.length - fittest.input - fittest.output + fittest.connections.length + fittest.gates.length) * growth;
@@ -947,9 +958,17 @@ Network.prototype = {
       }
 
       if (options.schedule && neat.generation % options.schedule.iterations === 0) {
-        options.schedule.function({ fitness: fitness, error: -error, iteration: neat.generation });
+        options.schedule.function({
+          best: bestGenome,
+          fitness: fitness,
+          error: -error,
+          iteration: neat.generation,
+        });
       }
     }
+
+    // ensure stop flag is reset (if early-stopped)
+    this.stop = false
 
     if (threads > 1) {
       for (var i = 0; i < workers.length; i++) workers[i].terminate();
