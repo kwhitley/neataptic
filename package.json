@@ -1,6 +1,6 @@
 {
   "name": "@krwhitley/neataptic",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Thomas Wagenaar's Neataptic, copied for modern DX improvements.",
   "main": "./src/neataptic",
   "scripts": {
@@ -9,7 +9,9 @@
     "build:dist": "webpack",
     "build": "npm run build:dist",
     "deploy": "npm run build && npm run test:dist && npm publish",
-    "test:travis": "npm run build:dist && npm run test:dist"
+    "test:travis": "npm run build:dist && npm run test:dist",
+    "prerelease": "yarn build",
+    "release": "release --tag --push --src=dist"
   },
   "devDependencies": {
     "chai": "^4.1.2",

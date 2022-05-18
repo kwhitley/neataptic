@@ -17,6 +17,7 @@ var license = fs.readFileSync('./LICENSE', 'utf-8');
 module.exports = {
   context: __dirname,
   entry: {
+    'dist/network': './src/architecture/network-only.js',
     'dist/neataptic': './src/neataptic.js',
     [`mkdocs/theme/cdn/${version}/neataptic`]: './src/neataptic.js'
   },
