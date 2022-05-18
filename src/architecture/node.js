@@ -66,9 +66,19 @@ Node.prototype = {
       this.state += connection.from.activation * connection.weight * connection.gain;
     }
 
+    const clamp = (x) => {
+      const max = Number.MAX_VALUE;
+
+      return x === Infinity
+        ? Number.MAX_VALUE
+        : x === -Infinity
+        ? -Number.MAX_VALUE
+        : x;
+    }
+
     // Squash the values received
-    this.activation = this.squash(this.state) * this.mask;
-    this.derivative = this.squash(this.state, true);
+    this.activation = clamp(this.squash(this.state) * this.mask);
+    this.derivative = clamp(this.squash(this.state, true));
 
     // Update traces
     var nodes = [];

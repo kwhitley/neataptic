@@ -25,6 +25,16 @@ var multi = {
 
   /** Activate a serialized network */
   activateSerializedNetwork: function (input, A, S, data, F) {
+    const clamp = (x) => {
+      const max = Number.MAX_VALUE;
+
+      return x === Infinity
+        ? Number.MAX_VALUE
+        : x === -Infinity
+        ? -Number.MAX_VALUE
+        : x;
+    }
+
     for (var i = 0; i < data[0]; i++) A[i] = input[i];
     for (i = 2; i < data.length; i++) {
       let index = data[i++];
@@ -38,7 +48,8 @@ var multi = {
       while (data[i] !== -2) {
         S[index] += A[data[i++]] * data[i++] * (data[i++] === -1 ? 1 : A[data[i - 1]]);
       }
-      A[index] = F[squash](S[index]);
+
+      A[index] = clamp(F[squash](S[index]));
     }
 
     var output = [];
